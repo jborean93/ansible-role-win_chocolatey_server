@@ -1,0 +1,5 @@
+---
+- hosts: windows
+  gather_facts: no
+  roles:
+  - ../..

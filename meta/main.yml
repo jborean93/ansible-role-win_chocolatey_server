@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: Jordan Borean
+  description: Install Chocolatey Server on Windows role
+  company: Red Hat
+  license: MIT
+  min_ansible_version: 2.4
+  platforms:
+  - name: Windows
+    versions:
+    - Server 2016
+  galaxy_tags:
+  - windows
+dependencies: []

@@ -1,0 +1,10 @@
+image: Visual Studio 2017
+
+init:
+- ps: Get-PackageProvider -Name NuGet -ForceBootstrap > $null
+- ps: Install-Module -Name PSTestWinibleZ -Force
+
+build: false
+
+test_script:
+- ps: Import-Module PSTestWinibleZ; Test-AnsibleRole
