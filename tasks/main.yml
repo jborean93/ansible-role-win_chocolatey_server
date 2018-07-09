@@ -1,2 +1,3 @@
 ---
-- win_ping:
+- name: name for task
+  win_ping:
