@@ -3,13 +3,8 @@ image: Visual Studio 2017
 init:
 - ps: Get-PackageProvider -Name NuGet -ForceBootstrap > $null
 - ps: Install-Module -Name PSTestWinibleZ -Force
-
-build: false
-
-test_script:
-#- ps: Import-Module PSTestWinibleZ; Test-AnsibleRole
 - ps: |
-    $url = "https://ci.appveyor.com/api/buildjobs/56mtxp7lybfpgoj9/artifacts/pstestwiniblez.zip"
+    $url = "https://ci.appveyor.com/api/buildjobs/p13bfr78gjc73pnq/artifacts/pstestwiniblez.zip"
     $repo_path = "C:\PSTestWinibleZ"
     $download_path = Join-Path -Path $repo_path -ChildPath PSTestWinibleZ.zip
 
@@ -22,6 +17,9 @@ test_script:
     Add-Type -AssemblyName System.IO.Compression.FileSystem > $null
     [System.IO.Compression.ZipFile]::ExtractToDirectory($download_path, $repo_path)
 
-    Import-Module -Name $repo_path
-    $res = Test-AnsibleRole
-    exit ([int](-not $res))
+
+build: false
+
+test_script:
+#- ps: Import-Module PSTestWinibleZ; Test-AnsibleRole
+- cmd: powershell.exe "Import-Module -Name powershell-yaml; Import-Module -Name psake; Import-Module -Name 'C:\PSTestWinibleZ'; if (Test-AnsibleRole) { exit 0 } else { exit 1}
