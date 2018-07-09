@@ -1,3 +1,2 @@
 ---
-- name: test out ping
-  win_ping:
+- win_ping:
