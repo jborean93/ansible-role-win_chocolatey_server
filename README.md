@@ -1,5 +1,7 @@
 # Ansible Role win-chocolatey-server
 
+[![Build status](https://ci.appveyor.com/api/projects/status/n6ecdabnrlij0xy3?svg=true)](https://ci.appveyor.com/project/jborean93/ansible-role-win-chocolatey-server)
+
 Installs [Chocolatey Server](https://chocolatey.org/packages/chocolatey.server)
 on a Windows host.
 

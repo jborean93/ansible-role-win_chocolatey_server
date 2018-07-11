@@ -30,11 +30,12 @@
 
   - name: remove main IIS features
     win_feature:
-      name:
-      - Web-Server
-      - Web-Scripting-Tools
-      - Web-Basic-Auth
+      name: '{{ item }}'
       state: absent
+    with_items:
+    - Web-Server
+    - Web-Scripting-Tools
+    - Web-Basic-Auth
 
   - name: remove the firewall rules
     win_firewall_rule:
