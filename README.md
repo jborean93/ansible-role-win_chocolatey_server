@@ -26,6 +26,9 @@ optional variables to be set;
 * Specify the path or URL of the `chocolatey` package to configure the server's `install.ps1` script
 * Specify the maximum package size allowed on the server
 
+I would like to thank kkolk for the excellent blog post that helped me write
+this role. You can read the post [here](http://frostbyte.us/using-ansible-to-install-a-chocolatey-package-repository/).
+
 
 ## Requirements
 

@@ -12,8 +12,6 @@
       $site = Get-WebSite -Name chocolatey_server_site
       if ($site) {
           $true
-          $site.state
-          $site.serverAutoStart
           $site.applicationPool
           $site.physicalPath
           foreach ($binding in $site.bindings.Collection) {
@@ -49,6 +47,13 @@
     register: firewall_rules
     check_mode: no
 
+  - name: connect to the main chocolatey page
+    win_uri:
+      url: http://localhost:80
+      return_content: yes
+    register: uri
+    when: not ansible_check_mode
+
   - name: assert results (check mode)
     assert:
       that:
@@ -61,16 +66,16 @@
   - name: assert results
     assert:
       that:
-      - site.stdout_lines|count == 6
+      - site.stdout_lines|count == 4
       - site.stdout_lines[0] == "True"
-      - site.stdout_lines[1] == "Started"
-      - site.stdout_lines[2] == "True"
-      - site.stdout_lines[3] == "chocolatey_server_app_pool"
-      - site.stdout_lines[4] == "C:\\tools\\chocolatey.server"
-      - site.stdout_lines[5] == "http *:80:"
+      - site.stdout_lines[1] == "chocolatey_server_app_pool"
+      - site.stdout_lines[2] == "C:\\tools\\chocolatey.server"
+      - site.stdout_lines[3] == "http *:80:"
       - packages.files == []
       - web_config.stat.checksum == expected_web_config
       - firewall_rules.stdout_lines == ["Chocolatey Server HTTP (In)", "80"]
+      - '"You are running a Simple Chocolatey Package Repository" in uri.content'
+      - uri.status_code == 200
     when: not ansible_check_mode
 
 - import_playbook: cleanup.yml
@@ -98,8 +103,6 @@
       $site = Get-WebSite -Name chocolatey_server_site
       if ($site) {
           $true
-          $site.state
-          $site.serverAutoStart
           $site.applicationPool
           $site.physicalPath
           foreach ($binding in $site.bindings.Collection) {
@@ -135,6 +138,31 @@
     register: firewall_rules
     check_mode: no
 
+  - name: fail to connect with no authentication
+    win_uri:
+      url: http://localhost:8080
+      status_code:
+      - 401
+
+  - name: connect to the http main chocolatey page
+    win_uri:
+      url: http://localhost:8080
+      return_content: yes
+      user: user1
+      password: pass1
+    register: uri_http
+    when: not ansible_check_mode
+
+  - name: connect to the https main chocolatey page
+    win_uri:
+      url: https://localhost:8443
+      return_content: yes
+      validate_certs: no
+      user: user2
+      password: pass2
+    register: uri_https
+    when: not ansible_check_mode
+
   - name: assert results (check mode)
     assert:
       that:
@@ -147,16 +175,18 @@
   - name: assert results
     assert:
       that:
-      - site.stdout_lines|count == 7
+      - site.stdout_lines|count == 5
       - site.stdout_lines[0] == "True"
-      - site.stdout_lines[1] == "Started"
-      - site.stdout_lines[2] == "True"
-      - site.stdout_lines[3] == "chocolatey_server_app_pool"
-      - site.stdout_lines[4] == "C:\\tools2\\chocolatey.server"
-      - site.stdout_lines[5] == "http *:8080:"
-      - site.stdout_lines[6] == "https *:8443:"
+      - site.stdout_lines[1] == "chocolatey_server_app_pool"
+      - site.stdout_lines[2] == "C:\\tools2\\chocolatey.server"
+      - site.stdout_lines[3] == "http *:8080:"
+      - site.stdout_lines[4] == "https *:8443:"
       - packages.files|count == 1
       - packages.files[0].filename == "chocolatey"
       - web_config.stat.checksum == expected_web_config
       - firewall_rules.stdout_lines == ["Chocolatey Server HTTPS (In)", "8443", "Chocolatey Server HTTP (In)", "8080"]
+      - '"You are running a Simple Chocolatey Package Repository" in uri_http.content'
+      - uri_http.status_code == 200
+      - '"You are running a Simple Chocolatey Package Repository" in uri_https.content'
+      - uri_https.status_code == 200
     when: not ansible_check_mode
