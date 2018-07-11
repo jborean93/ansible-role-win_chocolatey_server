@@ -74,10 +74,10 @@
     win_lineinfile:
       path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
       insertbefore: '\s*</credentials>'
-      line: '      <user name="{{ item.key }}" password="{{ item.value }}" />'
-      regexp: '<user name="{{ item.key }}" password="'
+      line: '      <user name="{{ item }}" password="{{ opt_chocolatey_server_credentials[item] }}" />'
+      regexp: '<user name="{{ item }}" password="'
       state: present
-    with_dict: '{{ opt_chocolatey_server_credentials }}'
+    with_items: '{{ opt_chocolatey_server_credentials.keys()|sort }}'  # for test expectation we want to preserve alphabetical order of the keys
     no_log: yes  # while we are dealing with hashes we shouldn't log this task
 
   - name: deny anonymous user access

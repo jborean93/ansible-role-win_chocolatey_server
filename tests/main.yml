@@ -7,7 +7,7 @@
   - ../..  # test idempotency
 
   post_tasks:
-  - name: check if site existsi
+  - name: check if site exists
     win_shell: |
       $site = Get-WebSite -Name chocolatey_server_site
       if ($site) {

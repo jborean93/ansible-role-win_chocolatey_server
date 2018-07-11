@@ -1,8 +1,7 @@
 # Ansible Role win_chocolatey_server
 
 [![Build status](https://ci.appveyor.com/api/projects/status/mw7a34uxoio16vfh?svg=true)](https://ci.appveyor.com/project/jborean93/ansible-role-win-chocolatey-server)
-[![win_chocolatey_server](https://img.shields.io/ansible/role/36226.svg)](https://galaxy.ansible.com/jborean93/win_chocolatey_server)
-
+[![win_chocolatey_server Ansible Galaxy Role](https://img.shields.io/ansible/role/36226.svg)](https://galaxy.ansible.com/jborean93/win_chocolatey_server)
 
 Installs [Chocolatey Server](https://chocolatey.org/packages/chocolatey.server)
 on a Windows host.
