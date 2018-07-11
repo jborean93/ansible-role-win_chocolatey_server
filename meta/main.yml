@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  role_name: win-chocolatey-server
+  role_name: win_chocolatey_server
   author: Jordan Borean
   description: Install Chocolatey Server on Windows role
   license: MIT

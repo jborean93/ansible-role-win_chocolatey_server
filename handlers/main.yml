@@ -1,13 +1,8 @@
 ---
-- name: restart chocolatey server site
-  win_iis_website:
-    name: chocolatey_server_site
-    state: restarted
-
 # start reload packages
 - name: set fact of temp username and password if basic auth is enabled
   set_fact:
-    pri_chocolatey_server_username: win-chocolatey-server-tmp-user
+    pri_chocolatey_server_username: win_chocolatey_server-tmp-user
     pri_chocolatey_server_password: delete-me-{{ lookup('password', '/dev/null chars=ascii_letters,digits length=8') }}
   when: opt_chocolatey_server_credentials is defined
   listen: reload chocolatey packages

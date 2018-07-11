@@ -40,8 +40,6 @@
     line: '        <requestLimits maxAllowedContentLength="{{ opt_chocolatey_server_max_package_size }}" />'
     regexp: '<requestLimits maxAllowedContentLength="'
     state: present
-  notify:
-  - restart chocolatey server site
 
 - name: set maxRequestLength for the max package size specified
   win_lineinfile:
@@ -51,8 +49,6 @@
     line: '$1<httpRuntime targetFramework="$2" executionTimeout="$3" maxRequestLength="{{ opt_chocolatey_server_max_package_size // 1024 }}" />'
     regexp: '(\s*)<httpRuntime targetFramework="([\d.]*)" executionTimeout="(\d*)" maxRequestLength="[\w\d.]*" \/>'
     state: present
-  notify:
-  - restart chocolatey server site
 
 - name: configure basic authentication
   block:
@@ -63,16 +59,12 @@
       line: '    <credentials source="Inline" passwordFormat="SHA1">'
       regexp: '<credentials source="Inline" passwordFormat="'
       state: present
-    notify:
-    - restart chocolatey server site
 
   - name: remove default username entry
     win_lineinfile:
       path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
       line: '{{ item }}'
       state: absent
-    notify:
-    - restart chocolatey server site
     with_items:
     - '      <!-- remove or change this user -->'
     - '      <user name="choco" password="rocks" />'
@@ -85,8 +77,6 @@
       line: '      <user name="{{ item.key }}" password="{{ item.value }}" />'
       regexp: '<user name="{{ item.key }}" password="'
       state: present
-    notify:
-    - restart chocolatey server site
     with_dict: '{{ opt_chocolatey_server_credentials }}'
     no_log: yes  # while we are dealing with hashes we shouldn't log this task
 
@@ -97,8 +87,6 @@
       line: '$1<deny users="?" />'
       regexp: '(\s*)<allow users="\?" \/>'
       state: present
-    notify:
-    - restart chocolatey server site
 
   - name: force local Chocolatey package if it was added
     win_lineinfile:
@@ -106,8 +94,6 @@
       line: '    <add key="forceLocalChocolateyPackage" value="true"/>'
       regexp: '<add key="forceLocalChocolateyPackage" value="'
       state: present
-    notify:
-    - restart chocolatey server site
     when: opt_chocolatey_server_chocolatey_path is defined or opt_chocolatey_server_chocolatey_url is defined
 
   when: opt_chocolatey_server_credentials is defined
@@ -122,8 +108,6 @@
       line: '$1<allow users="?" />'
       regexp: '(\s*)<deny users="\?" \/>'
       state: present
-    notify:
-    - restart chocolatey server site
 
   - name: do not force local Chocolatey package when not on basic auth
     win_lineinfile:
@@ -131,7 +115,5 @@
       line: '    <add key="forceLocalChocolateyPackage" value="false"/>'
       regexp: '<add key="forceLocalChocolateyPackage" value="'
       state: present
-    notify:
-    - restart chocolatey server site
 
   when: opt_chocolatey_server_credentials is not defined

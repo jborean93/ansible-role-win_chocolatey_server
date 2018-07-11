@@ -1,4 +1,4 @@
-name: win-chocolatey-server
+name: win_chocolatey_server
 version: 0.1.0
 ci_platform: appveyor-windows
 ansible_versions:

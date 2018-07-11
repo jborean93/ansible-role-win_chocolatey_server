@@ -1,6 +1,8 @@
-# Ansible Role win-chocolatey-server
+# Ansible Role win_chocolatey_server
 
-[![Build status](https://ci.appveyor.com/api/projects/status/n6ecdabnrlij0xy3?svg=true)](https://ci.appveyor.com/project/jborean93/ansible-role-win-chocolatey-server)
+[![Build status](https://ci.appveyor.com/api/projects/status/mw7a34uxoio16vfh?svg=true)](https://ci.appveyor.com/project/jborean93/ansible-role-win-chocolatey-server)
+[![win_chocolatey_server](https://img.shields.io/ansible/role/36226.svg)](https://galaxy.ansible.com/jborean93/win_chocolatey_server)
+
 
 Installs [Chocolatey Server](https://chocolatey.org/packages/chocolatey.server)
 on a Windows host.
@@ -80,7 +82,7 @@ None
   hosts: windows
   gather_facts: no
   roles:
-  - win-chocolatey-server
+  - win_chocolatey_server
 
 - name: setup Chocolatey with HTTPS listener on custom path and enable basic authentication
   hosts: windows
@@ -97,7 +99,7 @@ None
     opt_chocolatey_server_chocolatey_url: https://internalrepo.domain/chocolatey.0.10.11.nupkg
 
   roles:
-  - win-chocolatey-server
+  - win_chocolatey_server
 
   post_tasks:
   - name: output the cert hash used for the HTTPS bindings
