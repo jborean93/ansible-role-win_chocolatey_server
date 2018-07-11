@@ -1,7 +1,7 @@
 # Ansible Role win_chocolatey_server
 
 [![Build status](https://ci.appveyor.com/api/projects/status/mw7a34uxoio16vfh?svg=true)](https://ci.appveyor.com/project/jborean93/ansible-role-win-chocolatey-server)
-[![win_chocolatey_server Ansible Galaxy Role](https://img.shields.io/ansible/role/36226.svg)](https://galaxy.ansible.com/jborean93/win_chocolatey_server)
+[![win_chocolatey_server Ansible Galaxy Role](https://img.shields.io/ansible/role/27430.svg)](https://galaxy.ansible.com/jborean93/win_chocolatey_server)
 
 Installs [Chocolatey Server](https://chocolatey.org/packages/chocolatey.server)
 on a Windows host.
@@ -56,7 +56,7 @@ None, this role will run with the default options set.
 To set up the Chocolatey server to create an `install.ps1` script and source
 the installer file from the repo instead of the internet, download the
 [chocolatey nupkg](https://chocolatey.org/packages/chocolatey) file and set one
-of the following two variables;
+of the following two variables that point to this file;
 
 * `opt_chocolatey_server_chocolatey_path`: The path that is accessible from the remote host to the Chocolatey nupkg file.
 * `opt_chocolatey_server_chocolatey_url`: The URL that is accessible from the remote host to the Chocolatey nupkg file.
@@ -66,8 +66,8 @@ server will default to the public install script on the Chocolatey site.
 
 ### Output Variables
 
-These variables are set as a host with `set_fact` during the execution. They
-can be used by any downstream roles or tasks for that host.
+These variables are set as a host fact with `set_fact` during the execution.
+They can be used by any downstream roles or tasks for that host.
 
 * `out_chocolatey_server_https_certificate`: If a https binding is created with a self signed certificate, this is the certificate hash of the certificate created.
 
