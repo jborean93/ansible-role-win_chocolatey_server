@@ -98,7 +98,7 @@
   - ../..  # test idempotency
 
   post_tasks:
-  - name: check if site existsi
+  - name: check if site exists
     win_shell: |
       $site = Get-WebSite -Name chocolatey_server_site
       if ($site) {
@@ -141,9 +141,9 @@
   - name: fail to connect with no authentication
     win_uri:
       url: http://localhost:8080
-      status_code:
-      - 401
+    register: url_fail
     when: not ansible_check_mode
+    ignore_errors: yes
 
   - name: connect to the http main chocolatey page
     win_uri:
@@ -154,13 +154,36 @@
     register: uri_http
     when: not ansible_check_mode
 
+  # win_uri in 2.4 does not support TLSv1.2 by default, resort to win_shell until we can drop that version
   - name: connect to the https main chocolatey page
-    win_uri:
-      url: https://localhost:8443
-      return_content: yes
-      validate_certs: no
-      user: user2
-      password: pass2
+    win_shell: |
+      $ErrorActionPreference = "Stop"
+      $client = [System.Net.WebRequest]::Create("https://localhost:8443")
+
+      [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+      $security_protcols = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::SystemDefault
+      if ([Net.SecurityProtocolType].GetMember("Tls11").Count -gt 0) {
+          $security_protcols = $security_protcols -bor [Net.SecurityProtocolType]::Tls11
+      }
+      if ([Net.SecurityProtocolType].GetMember("Tls12").Count -gt 0) {
+          $security_protcols = $security_protcols -bor [Net.SecurityProtocolType]::Tls12
+      }
+      [Net.ServicePointManager]::SecurityProtocol = $security_protcols
+
+      $sec_password = ConvertTo-SecureString -String "pass1" -AsPlainText -Force
+      $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "user1", $sec_password
+      $client.Credentials = $credential
+      $response = $client.GetResponse()
+
+      $resp_st = $response.GetResponseStream()
+      $memory_st = New-Object -TypeName System.IO.MemoryStream
+      $resp_st.CopyTo($memory_st)
+      $resp_st.Close()
+      $memory_st.Seek(0, [System.IO.SeekOrigin]::Begin) > $null
+      $content_bytes = $memory_st.ToArray()
+
+      [int]$response.StatusCode
+      [System.Text.Encoding]::UTF8.GetString($content_bytes)
     register: uri_https
     when: not ansible_check_mode
 
@@ -186,8 +209,9 @@
       - packages.files[0].filename == "chocolatey"
       - web_config.stat.checksum == expected_web_config
       - firewall_rules.stdout_lines == ["Chocolatey Server HTTPS (In)", "8443", "Chocolatey Server HTTP (In)", "8080"]
+      - url_fail is failed
       - '"You are running a Simple Chocolatey Package Repository" in uri_http.content'
       - uri_http.status_code == 200
-      - '"You are running a Simple Chocolatey Package Repository" in uri_https.content'
-      - uri_https.status_code == 200
+      - '"You are running a Simple Chocolatey Package Repository" in uri_https.stdout'
+      - uri_https.stdout_lines[0] == "200"
     when: not ansible_check_mode
