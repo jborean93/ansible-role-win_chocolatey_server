@@ -1,5 +1,8 @@
 image: Visual Studio 2017
 
+services:
+- iis
+
 init:
 - ps: Get-PackageProvider -Name NuGet -ForceBootstrap > $null
 - ps: Install-Module -Name PSTestWinibleZ -Force
