@@ -143,6 +143,7 @@
       url: http://localhost:8080
       status_code:
       - 401
+    when: not ansible_check_mode
 
   - name: connect to the http main chocolatey page
     win_uri:
