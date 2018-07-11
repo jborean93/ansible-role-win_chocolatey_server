@@ -1,0 +1,47 @@
+---
+- name: restart chocolatey server site
+  win_iis_website:
+    name: chocolatey_server_site
+    state: restarted
+
+# start reload packages
+- name: set fact of temp username and password if basic auth is enabled
+  set_fact:
+    pri_chocolatey_server_username: win-chocolatey-server-tmp-user
+    pri_chocolatey_server_password: delete-me-{{ lookup('password', '/dev/null chars=ascii_letters,digits length=8') }}
+  when: opt_chocolatey_server_credentials is defined
+  listen: reload chocolatey packages
+
+- name: set temp username and password for basic auth
+  win_lineinfile:
+    path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
+    insertbefore: '\s*</credentials>'
+    line: '      <user name="{{ pri_chocolatey_server_username }}" password="{{ pri_chocolatey_server_password|hash("sha1")|upper }}" />'
+    regexp: '<user name="{{ pri_chocolatey_server_username }}" password="'
+    state: present
+  when: opt_chocolatey_server_credentials is defined
+  listen: reload chocolatey packages
+
+- name: open package page to get Chocolatey server to load nuget packages
+  win_uri:
+    url: http://localhost:{{ opt_chocolatey_server_http_port }}/chocolatey/Packages
+    user: '{{ pri_chocolatey_server_username|default(omit) }}'
+    password: '{{ pri_chocolatey_server_password|default(omit) }}'
+  ignore_errors: yes  # blocks don't seem to work in handlers, do it manually so the next task always runs
+  register: pri_chocolatey_server_reload_res
+  listen: reload chocolatey packages
+
+- name: remove temp auth user
+  win_lineinfile:
+    path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
+    regexp: '<user name="{{ pri_chocolatey_server_username }}" password="'
+    state: absent
+  when: opt_chocolatey_server_credentials is defined
+  listen: reload chocolatey packages
+
+- name: fail if the reload task failed
+  fail:
+    msg: "Failed to reload Chocolatey packages"
+  when: pri_chocolatey_server_reload_res is failed
+  listen: reload chocolatey packages
+# end reload packages

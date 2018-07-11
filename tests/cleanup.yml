@@ -1,0 +1,48 @@
+---
+- name: remove chocolatey.server after tests have run
+  hosts: windows
+  gather_facts: no
+  tasks:
+  - name: remove chocolatey.server package
+    win_chocolatey:
+      name: chocolatey.server
+      state: absent
+
+  - name: remove Chocolatey web site
+    win_iis_website:
+      name: chocolatey_server_site
+      state: absent
+    ignore_errors: '{{ ansible_check_mode }}'
+
+  - name: remove Chocolatey web app pool
+    win_iis_webapppool:
+      name: chocolatey_server_app_pool
+      state: absent
+    ignore_errors: '{{ ansible_check_mode }}'
+
+  - name: remove Chocolatey tools folder
+    win_file:
+      path: '{{ item }}'
+      state: absent
+    with_items:
+    - C:\tools
+    - C:\tools2
+
+  - name: remove main IIS features
+    win_feature:
+      name:
+      - Web-Server
+      - Web-Scripting-Tools
+      - Web-Basic-Auth
+      state: absent
+
+  - name: remove the firewall rules
+    win_firewall_rule:
+      name: '{{ item }}'
+      state: absent
+      direction: in
+      protocol: tcp
+      action: allow
+    with_items:
+    - Chocolatey Server HTTP (In)
+    - Chocolatey Server HTTPS (In)

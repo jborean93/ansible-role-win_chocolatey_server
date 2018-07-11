@@ -1,0 +1,122 @@
+---
+# Chocolatey requires ChocolateyToolsLocation to be set when specifying a
+# custom path. We preempt this by setting it ourselves
+- name: set ChocolateyToolsLocation for both the current user and system wide
+  win_environment:
+    name: ChocolateyToolsLocation
+    level: '{{ item }}'
+    value: '{{ opt_chocolatey_server_path }}'
+    state: present
+  with_items:
+  - machine
+  - user
+
+- name: install the chocolatey.server package
+  win_chocolatey:
+    name: chocolatey.server
+    state: present
+    source: '{{ opt_chocolatey_server_source }}'
+
+- name: get OS version
+  win_file_version:
+    path: C:\Windows\System32\kernel32.dll
+  register: pri_chocolatey_server_os_version
+
+- name: create base features to install
+  set_fact:
+    pri_chocolatey_server_features:
+    - Web-Server
+    - Web-Scripting-Tools
+    - Web-Basic-Auth
+
+- name: add Server 2008 R2 specific features
+  set_fact:
+    pri_chocolatey_server_features: '{{ pri_chocolatey_server_features + ["Web-Asp-Net"] }}'
+    pri_chocolatey_server_site_parameters: applicationDefaults.serviceAutoStartEnabled:True
+  when: pri_chocolatey_server_os_version.win_file_version.product_version.startswith("6.1.")
+
+- name: add newer OS specific features
+  set_fact:
+    pri_chocolatey_server_features: '{{ pri_chocolatey_server_features + ["Web-Asp-Net45", "Web-AppInit"] }}'
+    pri_chocolatey_server_site_parameters: applicationDefaults.preloadEnabled:True|applicationDefaults.serviceAutoStartEnabled:True
+  when: not pri_chocolatey_server_os_version.win_file_version.product_version.startswith("6.1.")
+
+- name: install IIS server features
+  win_feature:
+    name: '{{ pri_chocolatey_server_features }}'
+    state: present
+  register: pri_chocolatey_server_install
+
+# bug in Server 2008 R2, need to re-register ASP.NET so IIS can detect it
+- name: re-register ASP.NET with IIS on Server 2008 R2
+  win_command: C:\Windows\Microsoft.NET\Framework\v4.0.30319\aspnet_regiis.exe -i
+  when:
+  - pri_chocolatey_server_install is changed
+  - pri_chocolatey_server_os_version.win_file_version.product_version.startswith("6.1.")
+
+- name: remove the default website
+  win_iis_website:
+    name: Default Web Site
+    state: absent
+  ignore_errors: '{{ ansible_check_mode }}'  # IIS ps feature may not be installed in check mode
+
+- name: create the Chocolatey IIS web app pool
+  win_iis_webapppool:
+    name: chocolatey_server_app_pool
+    state: started
+    attributes:
+      enable32BitAppOnWin64: yes
+      managedPipelineMode: Integrated
+      managedRuntimeVersion: v4.0
+      processModel.loadUserProfile: yes
+      startMode: 1  # AlwaysRunning - need to use an int for Server 2008 R2 compat
+  when: not ansible_check_mode  # fails when setting attributes in check mode
+
+- name: set permissions on root Chocolatey folder
+  win_acl:
+    path: '{{ opt_chocolatey_server_path }}\chocolatey.server'
+    user: '{{ item }}'
+    type: allow
+    state: present
+    rights: Read
+  with_items:
+  - IIS_IUSRS
+  - IUSR
+  - IIS APPPOOL\chocolatey_server_app_pool
+
+- name: set permissions on Chocolatey app data folder
+  win_acl:
+    path: '{{ opt_chocolatey_server_path }}\chocolatey.server\App_Data'
+    user: '{{ item }}'
+    type: allow
+    state: present
+    rights: Modify
+  with_items:
+  - IIS_IUSRS
+  - IIS APPPOOL\chocolatey_server_app_pool
+
+- name: create Chocolatey IIS website
+  win_iis_website:
+    name: chocolatey_server_site
+    state: started
+    application_pool: chocolatey_server_app_pool
+    physical_path: '{{ opt_chocolatey_server_path }}\chocolatey.server'
+    port: '{{ opt_chocolatey_server_http_port }}'
+    parameters: '{{ pri_chocolatey_server_site_parameters }}'
+  ignore_errors: '{{ ansible_check_mode }}'
+
+- name: create firewall rule for HTTP access
+  win_firewall_rule:
+    name: Chocolatey Server HTTP (In)
+    localport: '{{ opt_chocolatey_server_http_port }}'
+    action: allow
+    direction: in
+    protocol: tcp
+    state: present
+    enabled: yes
+    profiles: '{{ opt_chocolatey_server_firewall_profiles }}'
+    program: System
+
+- name: configure HTTPS settings for site
+  include_tasks: ssl.yml
+  when: opt_chocolatey_server_https_port is defined

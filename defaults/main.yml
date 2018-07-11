@@ -1,0 +1,6 @@
+---
+opt_chocolatey_server_path: C:\tools
+opt_chocolatey_server_source: https://chocolatey.org/api/v2/
+opt_chocolatey_server_max_package_size: 2147483648
+opt_chocolatey_server_http_port: 80
+opt_chocolatey_server_firewall_profiles: domain,private

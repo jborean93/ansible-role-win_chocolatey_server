@@ -1,3 +1,7 @@
 ---
-- name: name for task
-  win_ping:
+- name: install chocolatey.server
+  include_tasks: install.yml
+
+- name: configure chocolatey.server
+  include_tasks: configure.yml
+  when: not ansible_check_mode  # majority of the tasks are win_lineinfile and will fail in check mode
