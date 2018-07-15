@@ -84,7 +84,7 @@ None
   hosts: windows
   gather_facts: no
   roles:
-  - win_chocolatey_server
+  - jborean93.win_chocolatey_server
 
 - name: setup Chocolatey with HTTPS listener on custom path and enable basic authentication
   hosts: windows
@@ -101,7 +101,7 @@ None
     opt_chocolatey_server_chocolatey_url: https://internalrepo.domain/chocolatey.0.10.11.nupkg
 
   roles:
-  - win_chocolatey_server
+  - jborean93.win_chocolatey_server
 
   post_tasks:
   - name: output the cert hash used for the HTTPS bindings
