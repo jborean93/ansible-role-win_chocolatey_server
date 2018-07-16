@@ -10,7 +10,7 @@
     dest: '{{ opt_chocolatey_server_path }}\chocolatey.server\App_Data\Packages\'
     remote_src: yes
   notify:
-  - reload chocolatey packaged
+  - reload chocolatey packages
   when:
   - opt_chocolatey_server_chocolatey_path is defined
   - not pri_chocolatey_server_chocolatey_package.stat.exists

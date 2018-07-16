@@ -28,6 +28,11 @@ optional variables to be set;
 I would like to thank kkolk for the excellent blog post that helped me write
 this role. You can read the post [here](http://frostbyte.us/using-ansible-to-install-a-chocolatey-package-repository/).
 
+To add new packages to the Chocolatey server install, copy the .nupkg to
+`{{ opt_chocolatey_server_path }}\chocolatey.server\App_Data\Packages` and the
+server will pick up the file.
+
+_Note: You first need to activate the file watcher by navigating to `http://server/chocolatey/Packages` at least once the IIS app pool is warm. Any restarts of pool recycles require you to do this again before any packages are picked up in this dir._
 
 ## Requirements
 

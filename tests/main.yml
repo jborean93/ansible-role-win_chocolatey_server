@@ -3,8 +3,11 @@
   hosts: windows
   gather_facts: no
   roles:
-  - ../..
-  - ../..  # test idempotency
+  # need to set a random var so the role will run twice in a row
+  - role: ../..
+    run: 1
+  - role: ../..
+    run: 2
 
   post_tasks:
   - name: check if site exists
@@ -94,8 +97,10 @@
     opt_chocolatey_server_path: C:\tools2
     opt_chocolatey_server_chocolatey_url: https://packages.chocolatey.org/chocolatey.0.10.11.nupkg
   roles:
-  - ../..
-  - ../..  # test idempotency
+  - role: ../..
+    run: 1
+  - role: ../..
+    run: 2
 
   post_tasks:
   - name: check if site exists

@@ -27,7 +27,6 @@
     pri_chocolatey_server_features:
     - Web-Server
     - Web-Scripting-Tools
-    - Web-Basic-Auth
 
 - name: add Server 2008 R2 specific features
   set_fact:
@@ -40,6 +39,11 @@
     pri_chocolatey_server_features: '{{ pri_chocolatey_server_features + ["Web-Asp-Net45", "Web-AppInit"] }}'
     pri_chocolatey_server_site_parameters: applicationDefaults.preloadEnabled:True|applicationDefaults.serviceAutoStartEnabled:True
   when: not pri_chocolatey_server_os_version.win_file_version.product_version.startswith("6.1.")
+
+- name: add IIS basic auth feature if credentials are specified
+  set_fact:
+    pri_chocolatey_server_features: '{{ pri_chocolatey_server_features + ["Web-Basic-Auth"] }}'
+  when: opt_chocolatey_server_credentials is defined
 
 - name: install IIS server features
   win_feature:
@@ -105,6 +109,7 @@
     physical_path: '{{ opt_chocolatey_server_path }}\chocolatey.server'
     port: '{{ opt_chocolatey_server_http_port }}'
     parameters: '{{ pri_chocolatey_server_site_parameters }}'
+  notify: reload chocolatey packages
   ignore_errors: '{{ ansible_check_mode }}'
 
 - name: create firewall rule for HTTP access
