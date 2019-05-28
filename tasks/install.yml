@@ -11,11 +11,17 @@
   - machine
   - user
 
+- name: ensure Chocolatey is installed
+  win_chocolatey:
+    name: chocolatey
+    state: present
+    source: '{{ opt_chocolatey_server_chocolatey_source | default(omit) }}'
+
 - name: install the chocolatey.server package
   win_chocolatey:
     name: chocolatey.server
     state: present
-    source: '{{ opt_chocolatey_server_source }}'
+    source: '{{ opt_chocolatey_server_source | default(omit) }}'
 
 - name: get OS version
   win_file_version:
@@ -47,10 +53,9 @@
 
 - name: install IIS server features
   win_feature:
+    name: '{{ pri_chocolatey_server_features }}'
     name: '{{ item }}'
     state: present
-  # prefer to use list in name but this does not work in Ansible 2.4, change this once 2.4 is out of support
-  with_items: '{{ pri_chocolatey_server_features }}'
   register: pri_chocolatey_server_install
 
 # bug in Server 2008 R2, need to re-register ASP.NET so IIS can detect it

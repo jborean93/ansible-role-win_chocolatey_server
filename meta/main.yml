@@ -4,10 +4,11 @@ galaxy_info:
   author: Jordan Borean
   description: Install Chocolatey Server on Windows role
   license: MIT
-  min_ansible_version: 2.4
+  min_ansible_version: 2.6
   platforms:
   - name: Windows
     versions:
+    - Server 2019
     - Server 2016
     - Server 2012 R2
     - Server 2012

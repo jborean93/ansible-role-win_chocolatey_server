@@ -56,10 +56,22 @@ None, this role will run with the default options set.
 * `opt_chocolatey_server_https_certificate`: The certificate thumbprint to use for the HTTPS binding, if not specified then .
 * `opt_chocolatey_server_max_package_size`: The maximum allowed size, in bytes, of a package that can be stored on the server (default: `2147483648`).
 * `opt_chocolatey_server_path`: The root directory that the `chocolatey.server` package is installed to (default: `C:\tools`).
-* `opt_chocolatey_server_source`: The source location of the [chocolatey.server](https://chocolatey.org/packages/chocolatey.server) package (default: `https://chocolatey.org/api/v2/`). This can be the name/url of a Nuget repository or a local path that contains the nupkg file.
 
-To set up the Chocolatey server to create an `install.ps1` script and source
-the installer file from the repo instead of the internet, download the
+There are two variables that control the source location when sourcing
+Chocolatey itself and the `chocolatey.server` package.
+
+* `opt_chocolatey_server_chocolatey_source`: Override the `source` location for the step that installs Chocolatey itself. This value should be a URI to an `install.ps1` file. Omitting this value will mean Chocolatey will use `https://chocolatey.org/install.ps1`.
+* `opt_chocolatey_server_source`: The source location of the [chocolatey.server](https://chocolatey.org/packages/chocolatey.server) package. If this is omitted then it uses whatever source priority is set within Chocolatey itself. This can be the name/url of a Nuget repository or a local path that contains the nupkg file.
+
+If Chocolatey is already installed on that host,
+`opt_chocolatey_server_chocolatey_source` can be ignored. The script that var
+points to should contain the logic that installs the Chocolatey client itself.
+This could be an exact copy of `https://chocolatey.org/install.ps1` or a
+modified version that sources the various download artifacts from another
+offline source.
+
+To set up the Chocolatey server to create an `install.ps1` for other servers to
+use when bootstrapping Chocolatey itself. Download the
 [chocolatey nupkg](https://chocolatey.org/packages/chocolatey) file and set one
 of the following two variables that point to this file;
 
@@ -112,6 +124,21 @@ None
   - name: output the cert hash used for the HTTPS bindings
     debug:
       var: out_chocolatey_server_https_certificate
+
+- name: install Chocolatey and Chocolatey Server with an offline location
+  hosts: windows
+  gather_facts: no
+  vars:
+    # This is the location of the Chocolatey install.ps1 script, this needs to
+    # be amended manually to install Chocolatey itself in an offline fashion
+    # and is outside the scope of this role.
+    opt_chocolatey_server_chocolatey_source: \\fileshare\share\chocolatey\install.ps1
+
+    # This is the location of the chocolatey.server.npkg file
+    opt_chocolatey_server_source: \\fileshare\share\chocolatey\chocolatey.server.npkg
+
+  roles:
+  - jborean93.win_chocolatey_server
 ```
 
 
