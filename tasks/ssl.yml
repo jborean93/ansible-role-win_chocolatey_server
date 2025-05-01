@@ -1,5 +1,6 @@
 ---
 - name: create self signed certificate for site if no cert thumbprint was specified
+  when: opt_chocolatey_server_https_certificate is not defined
   block:
 
   - name: get or generate a self signed certificate for the https bindings
@@ -10,15 +11,13 @@
     set_fact:
       out_chocolatey_server_https_certificate: '{{ pri_chocolatey_server_https_certificate.thumbprint }}'
 
-  when: opt_chocolatey_server_https_certificate is not defined
-
 - name: setup https binding
   win_iis_webbinding:
     name: chocolatey_server_site
     port: '{{ opt_chocolatey_server_https_port }}'
     state: present
     protocol: https
-    certificate_hash: '{{ (opt_chocolatey_server_https_certificate is defined)|ternary(opt_chocolatey_server_https_certificate, out_chocolatey_server_https_certificate) }}'
+    certificate_hash: '{{ opt_chocolatey_server_https_certificate | default(out_chocolatey_server_https_certificate) }}'
   when: not ansible_check_mode  # site won't exist yet in check mode
 
 - name: create firewall rule for HTTPS access
@@ -29,6 +28,6 @@
     direction: in
     protocol: tcp
     state: present
-    enabled: yes
+    enabled: true
     profiles: '{{ opt_chocolatey_server_firewall_profiles }}'
     program: System

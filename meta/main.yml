@@ -1,17 +1,18 @@
 ---
 galaxy_info:
   role_name: win_chocolatey_server
+  namespace: jborean93
   author: Jordan Borean
   description: Install Chocolatey Server on Windows role
   license: MIT
-  min_ansible_version: 2.4
+  min_ansible_version: '2.15'
   platforms:
   - name: Windows
     versions:
-    - Server 2016
-    - Server 2012 R2
-    - Server 2012
-    - Server 2008 R2
+    - '2016'
+    - '2019'
+    - '2022'
+    - '2025'
   galaxy_tags:
   - windows
   - packaging

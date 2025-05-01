@@ -1,7 +1,7 @@
 ---
 - name: install with the defaults
   hosts: windows
-  gather_facts: no
+  gather_facts: false
   roles:
   # need to set a random var so the role will run twice in a row
   - role: ../..
@@ -24,7 +24,7 @@
           $false
       }
     register: site
-    check_mode: no
+    check_mode: false
 
   - name: get list of packages that have been installed
     win_find:
@@ -40,7 +40,7 @@
 
   - name: set expected web.config hash
     set_fact:
-      expected_web_config: '{{ lookup("file", "default_web.config")|windows_newlines|hash("sha1") }}'
+      expected_web_config: '{{ lookup("file", "default_web.config") | windows_newlines | hash("sha1") }}'
 
   - name: check if firewall rules for Chocolatey exists
     win_shell: |
@@ -48,12 +48,12 @@
       $rules = $fw.Rules | Where-Object { $_.Name.StartsWith("Chocolatey ") }
       foreach ($rule in $rules) { $rule.Name; $rule.LocalPorts }
     register: firewall_rules
-    check_mode: no
+    check_mode: false
 
   - name: connect to the main chocolatey page
     win_uri:
       url: http://localhost:80
-      return_content: yes
+      return_content: true
     register: uri
     when: not ansible_check_mode
 
@@ -81,11 +81,12 @@
       - uri.status_code == 200
     when: not ansible_check_mode
 
-- import_playbook: cleanup.yml
+- name: cleanup
+  import_playbook: cleanup.yml
 
 - name: install with https, basic auth, api token and chocolatey package
   hosts: windows
-  gather_facts: no
+  gather_facts: false
   vars:
     opt_chocolatey_server_api_token: test-token
     opt_chocolatey_server_credentials:
@@ -117,7 +118,7 @@
           $false
       }
     register: site
-    check_mode: no
+    check_mode: false
 
   - name: get list of packages that have been installed
     win_find:
@@ -133,7 +134,7 @@
 
   - name: set expected web.config hash
     set_fact:
-      expected_web_config: '{{ lookup("file", "custom_web.config")|windows_newlines|hash("sha1") }}'
+      expected_web_config: '{{ lookup("file", "custom_web.config") | windows_newlines | hash("sha1") }}'
 
   - name: check if firewall rules for Chocolatey exists
     win_shell: |
@@ -141,21 +142,21 @@
       $rules = $fw.Rules | Where-Object { $_.Name.StartsWith("Chocolatey ") }
       foreach ($rule in $rules) { $rule.Name; $rule.LocalPorts }
     register: firewall_rules
-    check_mode: no
+    check_mode: false
 
   - name: fail to connect with no authentication
     win_uri:
       url: http://localhost:8080
     register: url_fail
     when: not ansible_check_mode
-    ignore_errors: yes
+    ignore_errors: true
 
   - name: connect to the http main chocolatey page
     win_uri:
       url: http://localhost:8080
-      return_content: yes
-      user: user1
-      password: pass1
+      return_content: true
+      url_username: user1
+      url_password: pass1
     register: uri_http
     when: not ansible_check_mode
 

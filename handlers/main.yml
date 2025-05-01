@@ -11,7 +11,7 @@
   win_lineinfile:
     path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
     insertbefore: '\s*</credentials>'
-    line: '      <user name="{{ pri_chocolatey_server_username }}" password="{{ pri_chocolatey_server_password|hash("sha1")|upper }}" />'
+    line: '      <user name="{{ pri_chocolatey_server_username }}" password="{{ pri_chocolatey_server_password | hash("sha1") | upper }}" />'
     regexp: '<user name="{{ pri_chocolatey_server_username }}" password="'
     state: present
   when: opt_chocolatey_server_credentials is defined
@@ -20,9 +20,9 @@
 - name: open package page to get Chocolatey server to load nuget packages
   win_uri:
     url: http://localhost:{{ opt_chocolatey_server_http_port }}/chocolatey/Packages
-    user: '{{ pri_chocolatey_server_username|default(omit) }}'
-    password: '{{ pri_chocolatey_server_password|default(omit) }}'
-  ignore_errors: yes  # blocks don't seem to work in handlers, do it manually so the next task always runs
+    url_username: '{{ pri_chocolatey_server_username | default(omit) }}'
+    url_password: '{{ pri_chocolatey_server_password | default(omit) }}'
+  ignore_errors: true  # blocks don't seem to work in handlers, do it manually so the next task always runs
   register: pri_chocolatey_server_reload_res
   listen: reload chocolatey packages
 

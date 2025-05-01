@@ -4,3 +4,4 @@ Vagrantfile
 *.swp
 *.pyc
 tests/inventory.ini
+.ansible/

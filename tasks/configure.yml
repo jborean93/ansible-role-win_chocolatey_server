@@ -8,7 +8,7 @@
   win_copy:
     src: '{{ opt_chocolatey_server_chocolatey_path }}'
     dest: '{{ opt_chocolatey_server_path }}\chocolatey.server\App_Data\Packages\'
-    remote_src: yes
+    remote_src: true
   notify:
   - reload chocolatey packages
   when:
@@ -19,7 +19,6 @@
   win_get_url:
     url: '{{ opt_chocolatey_server_chocolatey_url }}'
     dest: '{{ opt_chocolatey_server_path }}\chocolatey.server\App_Data\Packages'
-    remote_src: yes
   notify:
   - reload chocolatey packages
   when:
@@ -44,13 +43,14 @@
 - name: set maxRequestLength for the max package size specified
   win_lineinfile:
     path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
-    backrefs: yes
+    backrefs: true
     # this is specified in KiB not bytes so we need to convert it ourselves
     line: '$1<httpRuntime targetFramework="$2" executionTimeout="$3" maxRequestLength="{{ opt_chocolatey_server_max_package_size // 1024 }}" />'
     regexp: '(\s*)<httpRuntime targetFramework="([\d.]*)" executionTimeout="(\d*)" maxRequestLength="[\w\d.]*" \/>'
     state: present
 
 - name: configure basic authentication
+  when: opt_chocolatey_server_credentials is defined
   block:
 
   - name: set credentials password format to SHA1
@@ -77,13 +77,13 @@
       line: '      <user name="{{ item }}" password="{{ opt_chocolatey_server_credentials[item] }}" />'
       regexp: '<user name="{{ item }}" password="'
       state: present
-    with_items: '{{ opt_chocolatey_server_credentials.keys()|sort }}'  # for test expectation we want to preserve alphabetical order of the keys
-    no_log: yes  # while we are dealing with hashes we shouldn't log this task
+    with_items: '{{ opt_chocolatey_server_credentials.keys() | sort }}'  # for test expectation we want to preserve alphabetical order of the keys
+    no_log: true  # while we are dealing with hashes we shouldn't log this task
 
   - name: deny anonymous user access
     win_lineinfile:
       path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
-      backrefs: yes
+      backrefs: true
       line: '$1<deny users="?" />'
       regexp: '(\s*)<allow users="\?" \/>'
       state: present
@@ -96,15 +96,14 @@
       state: present
     when: opt_chocolatey_server_chocolatey_path is defined or opt_chocolatey_server_chocolatey_url is defined
 
-  when: opt_chocolatey_server_credentials is defined
-
 - name: allow anonymous access if no credentials were specified
+  when: opt_chocolatey_server_credentials is not defined
   block:
 
   - name: allow anonymous user access
     win_lineinfile:
       path: '{{ opt_chocolatey_server_path }}\chocolatey.server\web.config'
-      backrefs: yes
+      backrefs: true
       line: '$1<allow users="?" />'
       regexp: '(\s*)<deny users="\?" \/>'
       state: present
@@ -115,5 +114,3 @@
       line: '    <add key="forceLocalChocolateyPackage" value="false"/>'
       regexp: '<add key="forceLocalChocolateyPackage" value="'
       state: present
-
-  when: opt_chocolatey_server_credentials is not defined

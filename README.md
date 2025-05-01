@@ -36,7 +36,7 @@ _Note: You first need to activate the file watcher by navigating to `http://serv
 
 ## Requirements
 
-* Windows Server 2008 R2+
+* Windows Server 2016+
 * Chocolatey client to be installed on the remote host if the remote host cannot access the internet
 
 
@@ -87,13 +87,13 @@ None
 ```
 - name: install Chocolatey Server with the defaults
   hosts: windows
-  gather_facts: no
+  gather_facts: false
   roles:
   - jborean93.win_chocolatey_server
 
 - name: setup Chocolatey with HTTPS listener on custom path and enable basic authentication
   hosts: windows
-  gather_facts: no
+  gather_facts: false
   vars:
     opt_chocolatey_server_api_token: eb82582c-2214-4ce9-9689-8c823ae33e45
     opt_chocolatey_server_credentials:

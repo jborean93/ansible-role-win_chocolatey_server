@@ -71,10 +71,10 @@
     name: chocolatey_server_app_pool
     state: started
     attributes:
-      enable32BitAppOnWin64: yes
+      enable32BitAppOnWin64: true
       managedPipelineMode: Integrated
       managedRuntimeVersion: v4.0
-      processModel.loadUserProfile: yes
+      processModel.loadUserProfile: true
       startMode: 1  # AlwaysRunning - need to use an int for Server 2008 R2 compat
   when: not ansible_check_mode  # fails when setting attributes in check mode
 
@@ -120,7 +120,7 @@
     direction: in
     protocol: tcp
     state: present
-    enabled: yes
+    enabled: true
     profiles: '{{ opt_chocolatey_server_firewall_profiles }}'
     program: System
 

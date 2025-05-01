@@ -1,0 +1,8 @@
+profile: shared
+skip_list:
+- name[casing]
+- role-name[path]
+- yaml[indentation]
+
+enable_list:
+- args

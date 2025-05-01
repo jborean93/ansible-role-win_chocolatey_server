@@ -1,7 +1,7 @@
 ---
 - name: remove chocolatey.server after tests have run
   hosts: windows
-  gather_facts: no
+  gather_facts: false
   tasks:
   - name: remove chocolatey.server package
     win_chocolatey:
